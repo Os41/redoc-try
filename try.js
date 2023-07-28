@@ -1,16 +1,9 @@
 ;((window, undefined) => {
 window.initTry = window.initTry || initTry
-
-/**
-
-global variable:
-
-window.initTry
-window.initTry.cfg
-window.initTry.renderPos
-window.initTry.$operation
-
-*/
+window.initTry.cfg = {}
+window.initTry.renderPos = () => {}
+window.initTry.hide = () => {}
+window.initTry.$operation = {}
 
 function initTry(userCfg) {
   loadScript(`https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js`)
@@ -223,6 +216,13 @@ function trySwagger(cfg) {
   $(`.http-verb`).before(`
     <button class="tryBtn">${cfg.tryText}</button>
   `)
+  window.initTry.hide = debounce(() => {
+    const isVisibleRes = isVisible(document.querySelector(`.try .fullApiBox`))
+    // Destroy swagger-ui if redoc_dom related content is not visible
+    if(isVisibleRes === false) {
+      $(`.swaggerBox`).addClass(`hide`).removeClass(`show`)
+    }
+  }, 500)
   $(`.tryBtn`).click(function (event) {
     event.stopPropagation()
     const $tryBtn = $(this)
@@ -288,6 +288,13 @@ function trySwagger(cfg) {
     $opblock.addClass(`open`)
 
     function renderPos() {
+      const isVisibleRes = isVisible(document.querySelector(`.try .fullApiBox`))
+      // Destroy swagger-ui if redoc_dom related content is not visible
+      if(isVisibleRes === false) {
+        $(`.swaggerBox`).addClass(`hide`).removeClass(`show`)
+        window.initTry.$operation.removeClass(`try`)
+        return undefined
+      }
       let pos = getShadowPos()
       // Move swagger to the position of swaggerShadow
       $(`.swaggerBox`).css({
@@ -334,12 +341,15 @@ function trySwagger(cfg) {
       subtree: true,
     })
     const redoc_dom = window.initTry.cfg.redocOptions[2]
+    const redocDomObserver = new MutationObserver(window.initTry.hide)
+    redocDomObserver.disconnect()
+    redocDomObserver.observe(redoc_dom, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    })
     $(redoc_dom).off('click.redoc_dom').on('click.redoc_dom', () => {
       renderPos()
-      if(isVisible(document.querySelector(`.try .fullApiBox`)) === false) {
-        $(`.swaggerBox`).addClass(`hide`).removeClass(`show`)
-        window.initTry.$operation.removeClass(`try`)
-      }
     })
   })
 
@@ -353,6 +363,9 @@ function isVisible(element) {
   let isVisible = true
   let parentElement = element
   
+  if(Boolean(parentElement) === false) {
+    isVisible = false
+  }
   while (parentElement) {
     const parentStyle = getComputedStyle(parentElement)
     
