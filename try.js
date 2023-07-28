@@ -216,10 +216,10 @@ function trySwagger(cfg) {
   $(`.http-verb`).before(`
     <button class="tryBtn">${cfg.tryText}</button>
   `)
-  window.initTry.hide = debounce(() => {
+  window.initTry.hide = debounce((force) => {
     const isVisibleRes = isVisible(document.querySelector(`.try .fullApiBox`))
     // Destroy swagger-ui if redoc_dom related content is not visible
-    if(isVisibleRes === false) {
+    if(force || (isVisibleRes === false)) {
       $(`.swaggerBox`).addClass(`hide`).removeClass(`show`)
     }
   }, 500)
@@ -341,7 +341,7 @@ function trySwagger(cfg) {
       subtree: true,
     })
     const redoc_dom = window.initTry.cfg.redocOptions[2]
-    const redocDomObserver = new MutationObserver(window.initTry.hide)
+    const redocDomObserver = new MutationObserver(() => window.initTry.hide())
     redocDomObserver.disconnect()
     redocDomObserver.observe(redoc_dom, {
       attributes: true,
@@ -397,11 +397,11 @@ function loadScript(src) {
 
 function debounce(fn, wait) { // anti-shake
   let timer = null
-  return function () {
+  return (...arg) => {
     if (timer !== null) {
       clearTimeout(timer)
     }
-    timer = setTimeout(fn, wait)
+    timer = setTimeout(() => fn(...arg), wait)
   }
 }
 

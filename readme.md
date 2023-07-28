@@ -65,6 +65,12 @@ We chose to transplant Swagger's `Try it out` function, which is complete, has c
 
 - [redoc-try-it-out](https://github.com/amorimjj/redoc-try-it-out) Close to the visual style of redoc, more options can be configured.
 
+## principle
+
+A complete swagger-ui is also displayed on the page where redoc is located, and then a try button is added to each api.
+
+When the try button is clicked, get the api where it is located and find the try-out window where the corresponding api in swagger-ui is located, and then move it to the position just clicked.
+
 ## License
 
 [WTFPL](https://en.wikipedia.org/wiki/WTFPL):
